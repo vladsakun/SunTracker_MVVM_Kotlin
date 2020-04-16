@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Weather Location">
+        <SwitchPreference
+            android:key="USE_DEVICE_LOCATION"
+            android:title="Use device location"
+            android:summary="App will automatically get your location"
+            android:defaultValue="true"
+            android:disableDependentsState="true"/>
+
+        <EditTextPreference
+            android:key="CUSTOM_LOCATION"
+            android:title="Location"
+            android:summary="Enter a city name"
+            android:defaultValue="Kyiv"
+            android:dependency="USE_DEVICE_LOCATION"/>
+    </PreferenceCategory>
+</PreferenceScreen>

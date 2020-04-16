@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/sun_rise_IV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:src="@drawable/sun_rise" />
+
+    <ImageView
+        android:id="@+id/sun_set_IV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/sun_set" />
+
+    <TextView
+        android:text="6:36"
+        android:id="@+id/sun_set_TV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/sun_set_IV"
+        android:padding="20dp"
+        android:textColor="@color/black"
+        android:textSize="20sp" />
+
+    <TextView
+        android:text="20:53"
+        android:id="@+id/sun_rise_TV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/sun_rise_IV"
+        android:layout_alignParentEnd="true"
+        android:padding="20dp"
+        android:textColor="@color/black"
+        android:textSize="20sp" />
+
+</RelativeLayout>
