@@ -13,15 +13,13 @@ import com.example.suntracker.data.db.entity.SunLocationEntity
 import com.example.suntracker.exceptions.LocationPermissionNotGrantedException
 import com.example.suntracker.internal.asDeferred
 import com.google.android.gms.location.FusedLocationProviderClient
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 
 const val USE_DEVICE_LOCATION = "USE_DEVICE_LOCATION"
 const val CUSTOM_LOCATION = "CUSTOM_LOCATION"
 const val TAG = "LOCATION"
+
 class LocationProviderImpl(
     private val fusedLocationProviderClient: FusedLocationProviderClient,
     context: Context
@@ -41,24 +39,27 @@ class LocationProviderImpl(
 
     override suspend fun getPreferredLocationString(): String {
 
-        val gc = Geocoder(appContext)
-        lateinit var ads: List<Address>
+        return withContext(Dispatchers.IO){
+            val gc = Geocoder(appContext)
+            lateinit var ads: List<Address>
 
-        ads = gc.getFromLocationName(getCustomLocationName(), 1)
-        Log.d(TAG, ads[0].latitude.toString())
-        Log.d(TAG, ads[0].longitude.toString())
+            ads = gc.getFromLocationName(getCustomLocationName(), 1)
+            Log.d(TAG, ads[0].latitude.toString())
+            Log.d(TAG, ads[0].longitude.toString())
 
-        if (isUsingDeviceLocation()) {
-            try {
-                val deviceLocation = getLastDeviceLocation().await()
-                    ?: return "${ads[0].latitude},${ads[0].longitude}"
-                return "${deviceLocation.latitude},${deviceLocation.longitude}"
-            } catch (e: LocationPermissionNotGrantedException) {
-                return "${ads[0].latitude},${ads[0].longitude}"
+            if (isUsingDeviceLocation()) {
+                try {
+                    val deviceLocation = getLastDeviceLocation().await()
+                        ?: return@withContext "${ads[0].latitude},${ads[0].longitude}"
+                    return@withContext "${deviceLocation.latitude},${deviceLocation.longitude}"
+                } catch (e: LocationPermissionNotGrantedException) {
+                    return@withContext "${ads[0].latitude},${ads[0].longitude}"
+                }
+            } else {
+                return@withContext "${ads[0].latitude},${ads[0].longitude}"
             }
-        } else {
-            return "${ads[0].latitude},${ads[0].longitude}"
         }
+
     }
 
     private suspend fun hasDeviceLocationChanged(lastWeatherLocation: SunLocationEntity): Boolean {

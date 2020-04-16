@@ -31,9 +31,13 @@ class CurrentSunInfoFragment : ScopedFragment(), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
         viewModel =ViewModelProvider(this, viewModelFactory)
             .get(CurrentSunInfoViewModel::class.java)
+
         bindUI()
+        
+        updateToolBar()
     }
 
     private fun bindUI() = launch {
@@ -55,7 +59,11 @@ class CurrentSunInfoFragment : ScopedFragment(), KodeinAware {
     }
 
     private fun updateLocation(location: String){
-        (activity as? AppCompatActivity)?.supportActionBar?.title = location
+        (activity as? AppCompatActivity)?.supportActionBar?.title = "Today's track"
+    }
+
+    private fun updateToolBar(){
+        (activity as? AppCompatActivity)?.supportActionBar?.title = "Today's track"
     }
 
 }
