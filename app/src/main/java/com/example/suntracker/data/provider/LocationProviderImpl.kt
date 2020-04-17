@@ -14,11 +14,15 @@ import com.example.suntracker.exceptions.LocationPermissionNotGrantedException
 import com.example.suntracker.internal.asDeferred
 import com.google.android.gms.location.FusedLocationProviderClient
 import kotlinx.coroutines.*
+import java.io.IOException
 
 
 const val USE_DEVICE_LOCATION = "USE_DEVICE_LOCATION"
 const val CUSTOM_LOCATION = "CUSTOM_LOCATION"
 const val TAG = "LOCATION"
+
+const val DEFAULT_LAT = 51
+const val DEFAULT_LNG = 30
 
 class LocationProviderImpl(
     private val fusedLocationProviderClient: FusedLocationProviderClient,
@@ -39,25 +43,28 @@ class LocationProviderImpl(
 
     override suspend fun getPreferredLocationString(): String {
 
-        return withContext(Dispatchers.IO){
+        return withContext(Dispatchers.IO) {
             val gc = Geocoder(appContext)
             lateinit var ads: List<Address>
 
             ads = gc.getFromLocationName(getCustomLocationName(), 1)
-            Log.d(TAG, ads[0].latitude.toString())
-            Log.d(TAG, ads[0].longitude.toString())
 
-            if (isUsingDeviceLocation()) {
-                try {
-                    val deviceLocation = getLastDeviceLocation().await()
-                        ?: return@withContext "${ads[0].latitude},${ads[0].longitude}"
-                    return@withContext "${deviceLocation.latitude},${deviceLocation.longitude}"
-                } catch (e: LocationPermissionNotGrantedException) {
+            try {
+                if (isUsingDeviceLocation()) {
+                    try {
+                        val deviceLocation = getLastDeviceLocation().await()
+                            ?: return@withContext "${ads[0].latitude},${ads[0].longitude}"
+                        return@withContext "${deviceLocation.latitude},${deviceLocation.longitude}"
+                    } catch (e: LocationPermissionNotGrantedException) {
+                        return@withContext "${ads[0].latitude},${ads[0].longitude}"
+                    }
+                } else {
                     return@withContext "${ads[0].latitude},${ads[0].longitude}"
                 }
-            } else {
-                return@withContext "${ads[0].latitude},${ads[0].longitude}"
+            } catch (e: IndexOutOfBoundsException) {
+                return@withContext "${DEFAULT_LAT},${DEFAULT_LNG}"
             }
+
         }
 
     }

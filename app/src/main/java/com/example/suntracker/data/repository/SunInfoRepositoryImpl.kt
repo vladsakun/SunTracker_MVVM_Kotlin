@@ -11,6 +11,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.math.ln
 
 class SunInfoRepositoryImpl(
     private val sunInfoDao: SunInfoDao,
@@ -20,7 +23,11 @@ class SunInfoRepositoryImpl(
 
 ) : SunInfoRepository {
 
+    private var dateFormat = SimpleDateFormat("hh:mm:ss a", Locale.ENGLISH)
+    private var displayDateFormat: SimpleDateFormat = SimpleDateFormat("HH:mm", Locale.ENGLISH)
+
     init {
+
         sunInfoNetworkDataSource.apply {
             downloadedCurrentSunInfo.observeForever { newSunInfo ->
                 persistFetchedSunInfo(newSunInfo)
@@ -30,7 +37,22 @@ class SunInfoRepositoryImpl(
 
     private fun persistFetchedSunInfo(newSunInfo: SunInfo) {
         GlobalScope.launch(Dispatchers.IO) {
-            sunInfoDao.upsert(newSunInfo)
+            dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+
+            val sunRiseTime = dateFormat.parse(newSunInfo.sunrise)
+            val sunSetTime = dateFormat.parse(newSunInfo.sunset)
+
+            displayDateFormat.timeZone = TimeZone.getDefault()
+
+            val preparedSunInfo = SunInfo(displayDateFormat.format(sunRiseTime), displayDateFormat.format(sunSetTime))
+
+            sunInfoDao.upsert(preparedSunInfo)
+        }
+    }
+
+    private fun persistFetchedLocationData(lat:Double, lng:Double){
+        GlobalScope.launch(Dispatchers.IO){
+            locationDao.upsert(SunLocationEntity(lat, lng))
         }
     }
 
@@ -56,6 +78,8 @@ class SunInfoRepositoryImpl(
 
         val locationString = locationProvider.getPreferredLocationString()
         val locationArray: List<String> = locationString.split(",")
+
+        persistFetchedLocationData(locationArray[0].toDouble(), locationArray[1].toDouble())
 
         sunInfoNetworkDataSource.fetchCurrentSunInfo(
             locationArray[0].toDouble(),

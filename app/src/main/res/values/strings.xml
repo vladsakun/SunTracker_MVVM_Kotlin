@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SunTracker</string>
+    <string name="sunRise">Sun rise at: %1$s</string>
+    <string name="sunSet">Sun set at: %1$s</string>
 </resources>
